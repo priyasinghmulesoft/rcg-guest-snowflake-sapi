@@ -1,0 +1,118 @@
+#%RAML 1.0
+title: Guest Data API
+types:
+  Address:
+    description: Address data type
+    example:
+      strict: true
+      value:
+        street: 44 Shirley Ave.
+        city: Raleigh
+        postalCode: "27513"
+        state: NC
+        country: USA
+    properties:
+      street?:
+        example: Example
+        type: string
+      city?:
+        example: Example
+        type: string
+      postalCode?:
+        example: Example
+        type: string
+      state?:
+        example: Example
+        type: string
+      country?:
+        example: Example
+        type: string
+  Guest:
+    description: Guest Data type
+    example:
+      strict: true
+      value:
+        guestID: "007"
+        firstName: Max
+        lastName: Mule
+        phone: "1234567890"
+        email: max.mule@mm.co
+        address:
+          street: 44 Shirley Ave.
+          city: Raleigh
+          postalCode: "27513"
+          state: NC
+          country: USA
+        createdDate: 15-Mar-2022
+    properties:
+      firstName?:
+        example: Example
+        type: string
+      lastName?:
+        example: Example
+        type: string
+      phone?:
+        example: Example
+        type: string
+      email?:
+        example: Example
+        type: string
+      address?:
+        type: Address
+      guestID?:
+        example: Example
+        type: string
+      createdDate?:
+        example: Example
+        type: string
+baseUri: api.samplebaseuri.com
+description: REST API to Create, Read, Update and Delete Guest Profile Records in customer's datawarehouse
+mediaType:
+  - application/json
+protocols:
+  - HTTP
+/guests:
+  get:
+    displayName: Get list of guest profiles
+    queryParameters:
+      errSim:
+        description: query parameter to simulate error
+        type: string
+        default: N
+    responses:
+      "200":
+        body:
+          items:
+            type: Guest
+
+/guest:
+  post:
+    displayName: Create new guest profile
+    body:
+      application/json:
+        type: Guest
+    responses:
+      "201":
+        body:
+          items:
+            type: Guest
+/guest/{phone}:
+  get:
+    displayName: Get guest profile by phone
+    responses:
+      "200":
+        body:
+          type: Guest
+  uriParameters:
+    phone:
+      example: '1234567890'
+      type: string
+  put:
+    displayName: Update existing guest profile
+    body:
+      application/json:
+        type: Guest    
+    responses:
+      "200":
+        body:
+          type: Guest

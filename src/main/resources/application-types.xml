@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="customer" format="json">
+      <types:shape format="weave" example="examples/snowflakeCustomerExample-1.json"><![CDATA[%dw 2.0
+
+type customer = {|
+  id: Number {"typeId": "int"}, 
+  phone: String, 
+  address: String, 
+  name: String
+|} {"example": "{\\\"id\\\":1237,\\\"phone\\\":\\\"00723344\\\",\\\"address\\\":\\\"123 St Av\\\",\\\"name\\\":\\\"MM\\\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#ff351712-0036-4153-9f08-bdafee512a83">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="customer"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

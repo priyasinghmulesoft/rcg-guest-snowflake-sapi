@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd">
+    <http:listener-config name="httpListenerConfig">
+        <http:listener-connection host="${http.host}" port="${http.port}" />
+    </http:listener-config>
+    <apikit:config name="guest-data-api-config" api="guest-data-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <configuration-properties doc:name="Configuration properties" doc:id="ce43022e-f291-46f0-b067-9e192c068997" file="config.yaml" />
+	<snowflake:snowflake-config name="Snowflake_Config" doc:name="Snowflake Config" doc:id="dcb26b25-c373-43ef-a66e-d7b5c97c5f7b" >
+		<snowflake:snowflake-connection accountName="${snowflake.account-name}" warehouse="${snowflake.warehouse}" database="${snowflake.database}" schema="${snowflake.schema}" user="${snowflake.user}" password="${snowflake.password}" />
+	</snowflake:snowflake-config>
+	<flow name="guest-data-api-main">
+        <http:listener config-ref="httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="guest-data-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="guest-data-api-console">
+        <http:listener config-ref="httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="guest-data-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\guest\(phone):guest-data-api-config">
+        <logger level="INFO" doc:name="Logger" doc:id="ee4fc564-9a0d-4986-9749-e38a8279b34d" message="request received"/>
+		<set-variable value="#[attributes.uriParams.phone]" doc:name="Save phone number" doc:id="4b2e79fe-dd75-42f1-9c08-74636b8df45b" variableName="phone"/>
+		<snowflake:select doc:name="Validate guest record in DW" doc:id="d924bc62-6a78-4bb2-b5d2-a04611f5905a" config-ref="Snowflake_Config">
+			<snowflake:sql ><![CDATA[SELECT * from CUSTOMER where C_PHONE = :phone]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[phone : vars.phone]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<choice doc:name="Choice" doc:id="9b7f41f8-9535-44fd-937c-5543b5f5e77f" >
+			<when expression="#[isEmpty(payload.C_CUSTKEY)]">
+				<ee:transform doc:name="Guest Profile Not Found" doc:id="b04bdbbd-a454-41db-a8a6-9b03adc7b04f">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	 Message : p("resp.failure")
+	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Send Profile Data">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+			</otherwise>
+		</choice>
+    </flow>
+    <flow name="get:\guests:guest-data-api-config">
+        <logger level="INFO" message="list request received" />
+		<snowflake:select doc:name="Get all guest profiles from DW" doc:id="ac786e3c-5eb2-4967-b598-4fa267401db4" config-ref="Snowflake_Config">
+			<snowflake:sql ><![CDATA[SELECT * from CUSTOMER LIMIT 10]]></snowflake:sql>
+		</snowflake:select>
+		<ee:transform doc:name="Send guest profile list" doc:id="712f313c-c594-412c-84da-5de4078610c5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+    <flow name="post:\guest:application\json:guest-data-api-config">
+        <logger level="INFO" message="new guest profile received" />
+		<ee:transform doc:name="Transform Message" doc:id="ff351712-0036-4153-9f08-bdafee512a83" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	id: payload.guestID default "",
+	phone: payload.phone default "",
+	address: ((((payload.address.street default "") ++ " " ++ (payload.address.city default "")) ++ " " ++ (payload.address.postalCode default "")) ++ " " ++ (payload.address.state default "")) ++ " " ++ (payload.address.country default ""),
+	name: (payload.firstName default "") ++ " " ++ (payload.lastName default "")
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<snowflake:insert doc:name="Create new guest profile in DW" doc:id="7c6dfb7d-d8b3-4571-bbe3-ee4d45e1bc59" config-ref="Snowflake_Config">
+			<snowflake:sql ><![CDATA[INSERT INTO CUSTOMER (C_CUSTKEY, C_PHONE, C_ADDRESS, C_NAME)
+values(:id, :phone, :address, :name);]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+ id: payload.id,
+ phone:payload.phone,
+address:payload.address,
+name:payload.name
+}]]]></snowflake:input-parameters>
+		</snowflake:insert>
+		<ee:transform doc:name="Send response" doc:id="fdbbfb1e-4b8f-4d2f-8b65-877482746556" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Message: p("resp.create")
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+</mule>

@@ -1,0 +1,23 @@
+http:
+ host: 0.0.0.0
+ port: "8081"
+
+snowflake:
+ account-name: 
+ warehouse: 
+ database: 
+ schema: 
+ user: 
+ password: 
+
+resp:
+ create: "Guest record created"
+ failure: "Guest record not found"
+ 
+snowflakeps:
+ account-name: 
+ warehouse: 
+ database: 
+ schema: 
+ user: 
+ password: 
