@@ -9,4 +9,4 @@ After registration, your personal Snowflake account access URL will look somethi
 ![6008852ab03a44b1a1863e6e2c195a09-0001](https://user-images.githubusercontent.com/95927453/165160379-361ef89c-774a-40cb-aaa5-6df6ca1fd867.jpg)
 
 
-![6008852ab03a44b1a1863e6e2c195a09-0002](https://user-images.githubusercontent.com/95927453/165160422-58cb31fa-2774-4eec-ba64-5e0392429e17.jpg)
+![Shake Shack POC - Page 2](https://user-images.githubusercontent.com/95927453/165174246-c6dbbf71-3bcf-4b2a-81de-3b0ba60f7b4d.jpeg)
