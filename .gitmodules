@@ -1,4 +1,0 @@
-[submodule "rcg-guest-snowflake-sapi"]
-	path = rcg-guest-snowflake-sapi
-	url = git@github.com:priyasinghmulesoft/rcg-guest-snowflake-sapi
-	branch = master
